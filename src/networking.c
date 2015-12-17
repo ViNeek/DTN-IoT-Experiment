@@ -8,7 +8,7 @@
 int iot_listener_create(struct iotListener* b) {
 	int iResult = 0;
 	int broadcastFlag = 1;
-	char str[256];
+	//char str[256];
 #ifdef NATIVE
 
 	b->m_Sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -49,7 +49,7 @@ int iot_listener_create(struct iotListener* b) {
 int iot_broadcaster_create(struct iotBroadcaster* b) {
 	int iResult = 0;
 	int broadcastFlag = 1;
-	char str[256];
+	//char str[256];
 #ifdef NATIVE
 
 	b->m_Sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -66,12 +66,12 @@ int iot_broadcaster_create(struct iotBroadcaster* b) {
 	b->m_ClientAddr.sin_family = AF_INET;
 	b->m_ClientAddr.sin_port = htons(BROADCAST_PORT);
 	//b->m_ClientAddr.sin_addr.s_addr = inet_pton(BROADCAST_ADDRESS);
-	inet_pton(AF_INET, BROADCAST_ADDRESS, &(b->m_ClientAddr.sin_addr));
+	//inet_pton(AF_INET, BROADCAST_ADDRESS, &(b->m_ClientAddr.sin_addr));
 
 	// now get it back and print it
-	inet_ntop(AF_INET, &(b->m_ClientAddr.sin_addr), str, 256);
+	//inet_ntop(AF_INET, &(b->m_ClientAddr.sin_addr), str, 256);
 
-	printf("%s\n", str); // prints "192.0.2.33"
+	//printf("%s\n", str); // prints "192.0.2.33"
 	// When sending there is no need to bind
 
 #endif //NATIVE	
@@ -107,7 +107,7 @@ int iot_client_create(struct iotClient* c) {
 
 static const char* DEBUG_MESSAGE = "Please be received!";
 
-int iot_client_sendto(struct iotClient* s, struct iotServer* r,struct iotPacket* p) {
+int iot_client_sendto(struct iotClient* s, struct iotServer* r,struct iotSendPacket* p) {
 	int iResult = 0;
 
 #ifdef NATIVE

@@ -1,8 +1,6 @@
 #ifndef __IOT_DTN__H
 #define __IOT_DTN__H
 
-#include "common.h"
-
 struct iotProducer {
 	int 	m_Len;
 	int 	m_EndFlag;

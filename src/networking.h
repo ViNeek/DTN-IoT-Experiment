@@ -26,7 +26,15 @@
 
 #endif // NATIVE
 
-#include "dtn.h"
+// Forward declare roles
+struct iotProducer;
+struct iotConsumer;
+struct iotDataMule;
+
+// Forward declare packets
+struct iotCachedPacket;
+struct iotSendPacket;
+struct iotRecvPacket;
 
 struct iotClient {
 
@@ -53,7 +61,7 @@ int iot_broadcaster_create(struct iotBroadcaster* b);
 int iot_listener_create(struct iotListener* b);
 
 // Messaging
-int iot_client_sendto(struct iotClient* s, struct iotServer* r, struct iotPacket* p);
+int iot_client_sendto(struct iotClient* s, struct iotServer* r, struct iotSendPacket* p);
 int iot_client_recvfrom(struct iotServer* r, struct iotClient* s);
 
 // Closing

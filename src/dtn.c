@@ -2,7 +2,9 @@
 
 #include "dtn.h"
 
-int iot_packet_create(struct iotPacket* p, char* msg) {
+struct iotSendPacket;
+
+int iot_packet_create(struct iotSendPacket* p, char* msg) {
 	return 0;
 }
 
