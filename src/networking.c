@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "util.h"
 #include "networking.h"
@@ -141,7 +142,7 @@ int iot_client_recvfrom(struct iotServer* r, struct iotClient* s) {
 
 	while(1)
 	{
-    	int slen=sizeof(struct sockaddr);
+    	unsigned int slen=sizeof(struct sockaddr);
     	if ( ( rcvdSize = recvfrom(r->m_Sock, b, sizeof(b)-1, 0, (struct sockaddr *)&ClientAddr, &slen) ) < 0 ) {
         	iot_error("recvfrom() rcved a different number of bytes than expected");
     	}

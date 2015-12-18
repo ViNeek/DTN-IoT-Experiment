@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "packet.h"
 
 // Mule data cache

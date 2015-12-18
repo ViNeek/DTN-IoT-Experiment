@@ -3,4 +3,6 @@ lib
 obj
 fit
 deps
+toolchain
 include
+.DS_Store

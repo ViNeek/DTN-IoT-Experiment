@@ -18,9 +18,13 @@
 
 #else
 
+#ifdef WIN32
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h> 
+
+#endif
 
 #endif // WIN32
 

@@ -1,44 +1,68 @@
 CC=gcc
+FIT_TOOLCHAIN=./toolchain/gcc-arm-none-eabi-4_8-2014q1/bin
+FIT_CC=$(FIT_TOOLCHAIN)/arm-none-eabi-gcc
 SRC_DIR=src
 BIN_DIR=bin
 OBJ_DIR=obj
 LIB_DIR=lib
 INC_DIR=include
 OBJS=main.o dtn.o util.o networking.o packet.o
+
+# arch
 TARGET=NATIVE
-CFLAGS=-I$(INC_DIR) -D$(TARGET) -c -g -Wall 
-LDFLAGS=-L$(LIB_DIR) -lws2_32
+
+# role
+ROLE=CLIENT
+
+CFLAGS=-I$(INC_DIR) -D$(TARGET) -D$(ROLE) -c -g -Wall 
+# Windows require this for native UDP
+#LDFLAGS=-L$(LIB_DIR) -lws2_32
+LDFLAGS=-L$(LIB_DIR)
 EXECUTABLE_NAME=run
 
 PHONY = main move
 
-all: main move
+all: main move print
 
-native: main move
+native: main move print
 
-testbed: main move
+testbed: CC=$(FIT_CC)
+testbed: main move print
 
 move:
-	mv -f ./*.o $(OBJ_DIR)
+	@mv -f ./*.o $(OBJ_DIR)
+
+print: 
+	@echo "\n\n$(ROLE) executable is in the 'bin' directory\n\n"
 
 main: $(OBJS)
-	mkdir -p $(OBJ_DIR)
-	$(CC) $(OBJS) $(LDFLAGS) -o $(BIN_DIR)/$(EXECUTABLE_NAME)
+	echo $(CC)
+	@mkdir -p $(LIB_DIR)
+	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(BIN_DIR)
+	@mkdir -p fit
+	@$(CC) $(OBJS) $(LDFLAGS) -o $(BIN_DIR)/$(EXECUTABLE_NAME)
+	@echo "	LD 		$(OBJS)"
 
-main.o: $(SRC_DIR)/main.c $(SRC_DIR)/common.h
-	$(CC) $(CFLAGS) $(SRC_DIR)/main.c
+main.o: $(SRC_DIR)/main.c
+	@$(CC) $(CFLAGS) $< 
+	@echo "	CC 		$<"
 
-dtn.o: $(SRC_DIR)/dtn.c $(SRC_DIR)/dtn.h
-	$(CC) $(CFLAGS) $(SRC_DIR)/dtn.c
+dtn.o: $(SRC_DIR)/dtn.c
+	@$(CC) $(CFLAGS) $< 
+	@echo "	CC 		$<"
 
-util.o: $(SRC_DIR)/util.c $(SRC_DIR)/util.h
-	$(CC) $(CFLAGS) $(SRC_DIR)/util.c
+util.o: $(SRC_DIR)/util.c
+	@$(CC) $(CFLAGS) $< 
+	@echo "	CC 		$<"
 
-networking.o: $(SRC_DIR)/networking.c $(SRC_DIR)/networking.h
-	$(CC) $(CFLAGS) $(SRC_DIR)/networking.c
+networking.o: $(SRC_DIR)/networking.c
+	@$(CC) $(CFLAGS) $< 
+	@echo "	CC 		$<"
 
-packet.o: $(SRC_DIR)/packet.c $(SRC_DIR)/packet.h
-	$(CC) $(CFLAGS) $(SRC_DIR)/packet.c
+packet.o: $(SRC_DIR)/packet.c
+	@$(CC) $(CFLAGS) $< 
+	@echo "	CC 		$<"
 
 clean:
 	rm $(OBJ_DIR)/*o $(BIN_DIR)/$(EXECUTABLE_NAME)
