@@ -1,31 +1,17 @@
-#include "contiki.h"
-
-#include <stdio.h> /* For printf() */
-/*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
-{
-  PROCESS_BEGIN();
-
-  printf("Hello, world\n");
-  
-  PROCESS_END();
-}
-
-/*
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-//#include "common.h"
-
+#include <iot/common.h>
 
 int main(int argc, char *argv[])
 {
-    int i;
+    //int i;
 
+    printf("Hello World\n");
+
+    
+/*
     //char buffer[256];
     if (argc < 2) {
        fprintf(stderr,"usage %s hostname port\n", argv[0]);
@@ -87,7 +73,6 @@ int main(int argc, char *argv[])
         iot_client_close(&l);
 
     iot_uninit_networking();
-
+*/
     return 0;
 }
-*/

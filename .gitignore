@@ -5,4 +5,12 @@ fit
 deps
 toolchain
 include
+.clang_complete
 .DS_Store
+tags
+*~
+obj_native
+dtn_experiment.native
+*.a
+*.iotlab-m3
+COMMANDS

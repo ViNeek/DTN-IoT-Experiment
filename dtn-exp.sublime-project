@@ -1,0 +1,18 @@
+{
+	"settings":
+	{
+    "cc_include_options":
+    [
+        "-I.",
+        "-I./src",
+        "-I../src",
+        "-I/Users/nickvitsas/Documents/Projects/IOT/DTN-IoT-Experiment/src"
+    ]
+    },
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	]
+}

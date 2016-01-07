@@ -1,0 +1,46 @@
+CC=gcc
+SRC_DIR=src
+X86_SRC_DIR=src/x86
+BIN_DIR=bin
+OBJ_DIR=obj
+LIB_DIR=lib
+INC_DIR=src
+OBJS=dtn_experiment.o
+
+# Windows require this for native UDP
+#LDFLAGS=-L$(LIB_DIR) -lws2_32
+LDFLAGS=-L$(LIB_DIR)
+EXECUTABLE_NAME=dtn_experiment
+	
+dtn_experiment: $(OBJS)
+	@mkdir -p $(LIB_DIR)
+	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(BIN_DIR)
+	@mkdir -p fit
+	@$(CC) $(OBJS) $(LDFLAGS) -o $(BIN_DIR)/$(EXECUTABLE_NAME)
+	@echo "	LD 		$(OBJS)"
+	@mv -f ./*.o $(OBJ_DIR)
+	@echo "\n\n$(ROLE) executable is in the 'bin' directory\n\n"
+
+dtn_experiment.o: dtn_experiment.c
+	@$(CC) $(CFLAGS) $< 
+	@echo "	CC 		$<"
+
+dtn.o: $(SRC_DIR)/dtn.c
+	@$(CC) $(CFLAGS) $< 
+	@echo "	CC 		$<"
+
+util.o: $(X86_SRC_DIR)/util.c
+	@$(CC) $(CFLAGS) $< 
+	@echo "	CC 		$<"
+
+networking.o: $(X86_SRC_DIR)/networking.c
+	@$(CC) $(CFLAGS) $< 
+	@echo "	CC 		$<"
+
+packet.o: $(SRC_DIR)/packet.c
+	@$(CC) $(CFLAGS) $< 
+	@echo "	CC 		$<"
+
+clean:
+	rm $(OBJ_DIR)/*o $(BIN_DIR)/$(EXECUTABLE_NAME)
