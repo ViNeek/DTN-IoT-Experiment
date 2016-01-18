@@ -1,35 +1,30 @@
 #ifndef __IOT_PACKET__H
 #define __IOT_PACKET__H
 
-#include "common.h"
+#define IOT_PACKET_SIZE 128
+#define IOT_PACKET_HEADER_OFFSET 0
+#define IOT_PACKET_PAYLOAD_OFFSET 32
+
+// Available packet types
+
+enum iotPacketTypes {
+  EVENT,
+  TRAFFIC,
+  DISCOUNT,
+  PARKING,
+  FOOD,
+  MAX_TYPE,
+  UNKNOWN_TYPE
+};
+
+#include <iot/types.h>
 
 struct iotCachedPacket {
-	int 	m_Len;
-	char	m_Buff[CACHE_BUFFER_MAX];
+  iotInt32 m_Len;
+  enum iotPacketTypes m_Type;
+  char m_Buff[IOT_PACKET_SIZE];
 } iotCachedPacket;
 
-struct iotSendPacket {
-	int 	m_Len;
-	int 	m_EndFlag;
-	char	m_Buff[SND_BUFFER_MAX];
-} iotSendPacket;
+const char *iot_packet_type(enum iotPacketTypes t);
 
-struct iotRecvPacket {
-	int 	m_Len;
-	int 	m_EndFlag;
-	char	m_Buff[RCV_BUFFER_MAX];
-} iotRecvPacket;
-
-// Packet Cache State
-int 						iot_cache_clear();
-int 						iot_cache_init();
-int 						iot_cache_add(struct iotRecvPacket* p);
-struct iotCachedPacket* 	iot_cache_find(struct iotRecvPacket* p);
-
-// Packet Creation
-int 						iot_packet_create(struct iotSendPacket* p, char* msg);
-int 						iot_packet_serialize(struct iotSendPacket* p);
-int 						iot_packet_create_json(char* json);
-void* 						iot_packet_create_serialized_json(char* json);
-
-#endif  // __IOT_PACKET__H
+#endif

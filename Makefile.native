@@ -42,5 +42,10 @@ packet.o: $(SRC_DIR)/packet.c
 	@$(CC) $(CFLAGS) $< 
 	@echo "	CC 		$<"
 
+mjson.o: $(SRC_DIR)/mjson.c
+	@$(CC) $(CFLAGS) $< 
+	@echo "	CC 		$<"
+
+
 clean:
 	rm $(OBJ_DIR)/*o $(BIN_DIR)/$(EXECUTABLE_NAME)

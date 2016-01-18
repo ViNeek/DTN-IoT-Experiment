@@ -10,7 +10,10 @@ include
 tags
 *~
 obj_native
+obj_sky
 dtn_experiment.native
+dtn_experiment.sky
 *.a
 *.iotlab-m3
 COMMANDS
+*.map

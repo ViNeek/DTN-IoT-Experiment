@@ -39,11 +39,39 @@
 
 #include <iot/common.h>
 
+#include <iot/mjson.h>
+
 #include "sys/ctimer.h"
 
 #include <stdio.h>
 
 static const char *mesg = "{ \"type\": \"traffic\", \"desc\": \"polu\"}";
+
+static const char *json_str3 = "[\"foo\",\"bar\",\"baz\"]";
+
+
+static char *stringptrs[5];
+static char stringstore[256];
+static int stringcount;
+
+static const struct json_array_t json_array_3 = {
+    .element_type = t_string,
+    .arr.strings.ptrs = stringptrs,
+    .arr.strings.store = stringstore,
+    .arr.strings.storelen = sizeof(stringstore),
+    .count = &stringcount,
+    .maxlen = sizeof(stringptrs) / sizeof(stringptrs[0]),
+};
+
+
+#ifdef DTN_SERVER
+  static struct iotDataMule g_DataMule;
+#endif
+
+#ifdef DTN_CLIENT
+  static struct iotClient g_Client;
+#endif
+
 /*---------------------------------------------------------------------------*/
 PROCESS(dtn_process, "dtn process");
 AUTOSTART_PROCESSES(&dtn_process);
@@ -56,23 +84,28 @@ PROCESS_THREAD(dtn_process, ev, data) {
 
   PROCESS_BEGIN();
 
+  int status;
+
+  status = json_read_array(json_str3, &json_array_3, NULL);
+  printf("Got string %d", stringcount);
+  printf("Got string %s", stringptrs[0]);
+  printf("Got string %s", stringptrs[1]);
+  printf("Got string %s\n", stringptrs[2]);
+ 
   iot_init();
   iot_log_level(INFO);
-
 
 #ifdef DTN_SERVER
   struct iotDataMule data_mule;
 
-  iot_mule_create(&data_mule);
+  iot_mule_create(&g_DataMule);
 #endif
-
 
 #ifdef DTN_CLIENT
-  iot_producer_create();
+  //iot_producer_create();
 #endif
 
-
-  ctimer_set(iot_ticker(), 1 * CLOCK_SECOND, iot_clock_tick, (void *)NULL);
+  //ctimer_set(iot_ticker(), 1 * CLOCK_SECOND, iot_clock_tick, (void *)NULL);
 
   PROCESS_END();
 }

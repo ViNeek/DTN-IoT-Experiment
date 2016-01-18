@@ -19,9 +19,9 @@ struct ctimer *iot_ticker() {
 void iot_log_level(enum iotLogLevels level) { g_LogLevel = level; }
 
 void iot_clock_tick(void *ptr) {
-  IOT_LOG_INFO("%d", iot_random_in_range(100, 200));
-  IOT_LOG_INFO("%d", iot_flip_coin());
-  IOT_LOG_INFO("%d", g_TickCount);
+  //IOT_LOG_INFO("%d", iot_random_in_range(100, 200));
+  //IOT_LOG_INFO("%d", iot_flip_coin());
+  //IOT_LOG_INFO("%d", g_TickCount);
 
   g_TickCount++;
 
@@ -54,7 +54,7 @@ iotBool iot_flip_coin() { return random_rand() % 2; }
 
 iotUInt16 iot_random_in_range(iotUInt16 min, iotUInt16 max) {
   // max <= RAND_MAX < ULONG_MAX, so this is okay.
-  iotUInt32 num_bins = (iotUInt32)(max - min) + 1;
+  iotUInt32 num_bins = (iotUInt32)(max - min);
   iotUInt32 num_rand = (iotUInt32)RANDOM_RAND_MAX + 1;
   iotUInt32 bin_size = num_rand / num_bins;
   iotUInt32 defect = num_rand % num_bins;

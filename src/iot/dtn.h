@@ -2,6 +2,7 @@
 #define __IOT_DTN__H
 
 #include <iot/types.h>
+#include <iot/cache.h>
 
 #include "contiki.h"
 #include "net/rime.h"
@@ -16,6 +17,8 @@ struct iotClient {
 struct iotDataMule {
   struct unicast_conn m_UC;
   struct broadcast_conn m_BC;
+
+  struct iotCache m_PacketCache;
 } iotDataMule;
 
 iotInt32 iot_mule_create(struct iotDataMule *dm);
