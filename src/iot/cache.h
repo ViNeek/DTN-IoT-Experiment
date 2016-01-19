@@ -4,7 +4,7 @@
 #include <iot/types.h>
 #include <iot/packet.h>
 
-#if TARGET==sky
+#if TARGET==IOT_PLATFORM_SKY
 #define IOT_CACHE_SIZE 20
 #else
 #define IOT_CACHE_SIZE 50

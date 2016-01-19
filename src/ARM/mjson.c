@@ -200,7 +200,7 @@ static int json_internal_read_object(const char *cp,
     char uescape[5];		/* enough space for 4 hex digits and a NUL */
     const struct json_attr_t *cursor;
     int substatus, n, maxlen = 0;
-    unsigned int u;
+    unsigned int u = 0;
     const struct json_enum_t *mp;
     char *lptr;
 

@@ -5,11 +5,11 @@
 
 enum iotLogLevels { INFO, DEBUG, WARN, ERROR, MAX_LEVEL, NONE };
 
-#define IOT_LOG_INFO(format, ...) iot_log(INFO, __FILE__, format, __VA_ARGS__)
-#define IOT_LOG_ERROR(format, ...) iot_log(ERROR, __FILE__, format, __VA_ARGS__)
-#define IOT_LOG_WARNING(format, ...)                                           \
-  iot_log(WARNING, __FILE__, format, __VA_ARGS__)
-#define IOT_LOG_DEBUG(format, ...) iot_log(DEBUG, __FILE__, format, __VA_ARGS__)
+#define IOT_LOG_INFO(format, args...) iot_log(INFO, __FILE__, format, ##args)
+#define IOT_LOG_ERROR(format, args...) iot_log(ERROR, __FILE__, format, ##args)
+#define IOT_LOG_WARNING(format, args...)                                           \
+  iot_log(WARNING, __FILE__, format, ##args)
+#define IOT_LOG_DEBUG(format, args...) iot_log(DEBUG, __FILE__, format, ##args)
 
 #define MINUTES_IN_AN_HOUR 60
 #define SECONDS_IN_A_MINUTE 60

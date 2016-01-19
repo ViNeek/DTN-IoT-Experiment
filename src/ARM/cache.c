@@ -26,11 +26,8 @@ iotInt32 iot_cache_random_populate(struct iotCache *c) {
   iot_cache_init(c);
 
   for (iotInt32 i = 0; i < IOT_CACHE_SIZE; ++i) {
-    int randType = iot_random_in_range(0, MAX_TYPE);
-    //printf("Max Type %d", MAX_TYPE);
-    if (randType > MAX_TYPE) {
-        printf("Rand type : %d", randType);
-    }
+    iotInt32 randType = iot_random_in_range(0, MAX_TYPE);
+   
     c->m_Cache[i].m_Type = randType;
     iotChar *header = &c->m_Cache[i].m_Buff[IOT_PACKET_HEADER_OFFSET];
     iotChar *payload = &c->m_Cache[i].m_Buff[IOT_PACKET_PAYLOAD_OFFSET];
@@ -40,9 +37,6 @@ iotInt32 iot_cache_random_populate(struct iotCache *c) {
 
     strcpy(header, iot_packet_type(randType));
     strcpy(payload, "Random text");
-    
-    // printf("Key %s\n", header );
-    // printf("Pay %s\n", payload );
   }
 
   return 0;
@@ -63,23 +57,19 @@ struct iotCachedPacket *iot_cache_next(struct iotCache *c) {
 
 iotChar *iot_cache_json_desc(struct iotCache *c, iotChar *buffer,
                              iotInt32 *len) {
-  iotInt32 length = 0;
+  iotInt32 length = 2;
   buffer[0] = 0;
-  iotInt32 cacheHits[MAX_TYPE];
+  iotBool cacheHits[MAX_TYPE];
+  iotBool empty = IOT_TRUE;
 
   strcat(buffer, "[");
   for (iotInt32 i = 0; i < IOT_CACHE_SIZE; ++i) {
-    //printf("Type %d", c->m_Cache[i].m_Type);
       cacheHits[c->m_Cache[i].m_Type] = 1;
-    //cacheHits[0] = 1;
-    //cacheHits[1] = 1;
-    //cacheHits[2] = 1;
-    //cacheHits[3] = 1;
-    //cacheHits[4] = 1;
   }
 
   for (iotInt32 i = 0; i < MAX_TYPE; ++i) {
     if (cacheHits[i] == 1) {
+      empty = IOT_FALSE;
       strcat(buffer, "\"");
       strcat(buffer, iot_packet_type(i));
       strcat(buffer, "\"");
@@ -87,12 +77,15 @@ iotChar *iot_cache_json_desc(struct iotCache *c, iotChar *buffer,
     }
   }
 
-  // Erase last 'comma'
-  length = strlen(buffer);
-  buffer[length-1] = 0;
+  if ( !empty ) {
+    // Erase dangling 'comma'
+    length = strlen(buffer);
+    buffer[length-1] = 0;
+  }
+
   strcat(buffer, "]");
 
-  *len = length + 1;
+  *len = length;
   
   return buffer;
 }

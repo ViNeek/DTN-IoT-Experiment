@@ -1,6 +1,8 @@
 #ifndef __IOT_PACKET__H
 #define __IOT_PACKET__H
 
+#include <iot/types.h>
+
 #define IOT_PACKET_SIZE 128
 #define IOT_PACKET_HEADER_OFFSET 0
 #define IOT_PACKET_PAYLOAD_OFFSET 32
@@ -16,8 +18,6 @@ enum iotPacketTypes {
   MAX_TYPE,
   UNKNOWN_TYPE
 };
-
-#include <iot/types.h>
 
 struct iotCachedPacket {
   iotInt32 m_Len;

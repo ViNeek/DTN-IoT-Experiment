@@ -1,75 +1,18 @@
-/*
- * Copyright (c) 2007, Swedish Institute of Computer Science.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the Institute nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- * This file is part of the Contiki operating system.
- *
- */
-
-/**
- * \file
- *         Testing the broadcast layer in Rime
- * \author
- *         Adam Dunkels <adam@sics.se>
- */
-
 #include <iot/common.h>
-
-#include <iot/mjson.h>
-
-#include "sys/ctimer.h"
 
 #include <stdio.h>
 
-static const char *mesg = "{ \"type\": \"traffic\", \"desc\": \"polu\"}";
-
-static const char *json_str3 = "[\"foo\",\"bar\",\"baz\"]";
-
-
-static char *stringptrs[5];
-static char stringstore[256];
-static int stringcount;
-
-static const struct json_array_t json_array_3 = {
-    .element_type = t_string,
-    .arr.strings.ptrs = stringptrs,
-    .arr.strings.store = stringstore,
-    .arr.strings.storelen = sizeof(stringstore),
-    .count = &stringcount,
-    .maxlen = sizeof(stringptrs) / sizeof(stringptrs[0]),
-};
-
-
-#ifdef DTN_SERVER
+// Client or Mule
+#if ROLE==IOT_SERVER
   static struct iotDataMule g_DataMule;
+  struct iotClient* iot_client_ref() { return NULL; }
+  struct iotDataMule* iot_mule_ref() { return &g_DataMule; }
 #endif
 
-#ifdef DTN_CLIENT
+#if ROLE==IOT_CLIENT
   static struct iotClient g_Client;
+  struct iotClient* iot_client_ref() { return &g_Client; }
+  struct iotDataMule* iot_mule_ref() { return NULL; }
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -78,34 +21,40 @@ AUTOSTART_PROCESSES(&dtn_process);
 
 PROCESS_THREAD(dtn_process, ev, data) {
 
-  // static struct etimer e;
-
-  // PROCESS_EXITHANDLER(broadcast_close(&broadcast);)
+// Set up exit handlers
+#if ROLE==IOT_SERVER
+  PROCESS_EXITHANDLER(iot_mule_close(&g_DataMule);)
+#endif
+  
+#if ROLE==IOT_CLIENT
+  PROCESS_EXITHANDLER(iot_client_close(&g_Client);)
+#endif
 
   PROCESS_BEGIN();
 
+  /*
   int status;
 
   status = json_read_array(json_str3, &json_array_3, NULL);
-  printf("Got string %d", stringcount);
-  printf("Got string %s", stringptrs[0]);
-  printf("Got string %s", stringptrs[1]);
+  printf("Got string %d\n", stringcount);
+  printf("Got string %s\n", stringptrs[0]);
+  printf("Got string %s\n", stringptrs[1]);
   printf("Got string %s\n", stringptrs[2]);
- 
-  iot_init();
-  iot_log_level(INFO);
+  */
 
-#ifdef DTN_SERVER
-  struct iotDataMule data_mule;
+  iot_init();
+
+#if ROLE==IOT_SERVER
+  IOT_LOG_INFO("Starting Mule at address %s", iot_node_address());
 
   iot_mule_create(&g_DataMule);
 #endif
+  
+#if ROLE==IOT_CLIENT
+  IOT_LOG_INFO("Starting Client at address %s", iot_node_address());
 
-#ifdef DTN_CLIENT
-  //iot_producer_create();
+  iot_client_create(&g_Client);
 #endif
-
-  //ctimer_set(iot_ticker(), 1 * CLOCK_SECOND, iot_clock_tick, (void *)NULL);
 
   PROCESS_END();
 }

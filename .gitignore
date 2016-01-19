@@ -1,6 +1,7 @@
 bin
 lib
 obj
+doc
 fit
 deps
 toolchain
@@ -11,6 +12,7 @@ tags
 *~
 obj_native
 obj_sky
+obj_iotlab-m3
 dtn_experiment.native
 dtn_experiment.sky
 *.a
