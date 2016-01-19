@@ -16,6 +16,8 @@ obj_iotlab-m3
 dtn_experiment.native
 dtn_experiment.sky
 *.a
+dtn-exp.sublime-project
+dtn-exp.sublime-workspace
 *.iotlab-m3
 COMMANDS
 *.map
