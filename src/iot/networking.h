@@ -21,8 +21,8 @@ const struct unicast_callbacks* iot_client_unicast_callbacks();
 const struct broadcast_callbacks* iot_client_broadcast_callbacks();
 
 iotInt32 iot_broadcast(struct iotNetworkEntity* broadcaster, iotChar* data, iotInt32 len);
-iotInt32 iot_send(struct iotNetworkEntity* sender, struct iotNetworkEntity* receiver);
-iotInt32 iot_recv(struct iotNetworkEntity* receiver, struct iotNetworkEntity* sender);
+iotInt32 iot_send(struct iotNetworkEntity* sender, iotChar* data, iotInt32 len, const rimeaddr_t *to);
+iotInt32 iot_recv(struct iotNetworkEntity* receiver, iotChar** dataPtr, iotInt32* len, const rimeaddr_t *from);
 
 const iotChar* iot_node_address();
 

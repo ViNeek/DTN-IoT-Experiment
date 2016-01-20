@@ -400,8 +400,10 @@ static int json_internal_read_object(const char *cp,
 		for (n = 0; n < 4 && cp[n] != '\0'; n++)
 		    uescape[n] = *cp++;
 		--cp;
-            #if TARGET!=sky
-		(void)sscanf(uescape, "%04x", &u);
+        #if TARGET!=IOT_PLATFORM_SKY
+			(void)sscanf(uescape, "%04x", &u);
+		#else
+			(void)uescape;
 	    #endif
                 *pval++ = (char)u;	/* will truncate values above 0xff */
 		break;

@@ -16,7 +16,7 @@ iotInt32 iot_cache_init(struct iotCache *c) {
   for (iotInt32 i = 0; i < IOT_CACHE_SIZE; ++i) {
     c->m_Cache[i].m_Buff[IOT_PACKET_HEADER_OFFSET] = 0;
     c->m_Cache[i].m_Buff[IOT_PACKET_PAYLOAD_OFFSET] = 0;
-    c->m_Cache[i].m_Type = 0;
+    c->m_Cache[i].m_Type = UNKNOWN_TYPE;
   }
 
   return 0;
@@ -37,6 +37,9 @@ iotInt32 iot_cache_random_populate(struct iotCache *c) {
 
     strcpy(header, iot_packet_type(randType));
     strcpy(payload, "Random text");
+
+    //IOT_LOG_INFO("Header %s", header);
+    //IOT_LOG_INFO("Payload %s", payload);
   }
 
   return 0;
@@ -59,8 +62,10 @@ iotChar *iot_cache_json_desc(struct iotCache *c, iotChar *buffer,
                              iotInt32 *len) {
   iotInt32 length = 2;
   buffer[0] = 0;
-  iotBool cacheHits[MAX_TYPE];
+  iotBool cacheHits[MAX_TYPE+1];
   iotBool empty = IOT_TRUE;
+  
+  memset(cacheHits, 0, MAX_TYPE+1);
 
   strcat(buffer, "[");
   for (iotInt32 i = 0; i < IOT_CACHE_SIZE; ++i) {
@@ -90,8 +95,28 @@ iotChar *iot_cache_json_desc(struct iotCache *c, iotChar *buffer,
   return buffer;
 }
 
-iotInt32 iot_cache_add(struct iotCache *c, struct iotCachedPacket *p) {
+static iotChar *g_StringPtrs[MAX_TYPE];
+static iotChar g_StringBuffer[IOT_PACKET_SIZE];
+static iotInt32 g_StringCount;
+static const struct json_attr_t g_ForwardType[] = {
+    {"F", t_array, .addr.array.element_type = t_string,
+                       .addr.array.arr.strings.ptrs = g_StringPtrs,
+                       .addr.array.arr.strings.store = g_StringBuffer,
+                       .addr.array.arr.strings.storelen = sizeof(g_StringBuffer),
+                       .addr.array.count = &g_StringCount,
+                       .addr.array.maxlen = sizeof(g_StringPtrs) / sizeof(g_StringPtrs[0])},
+    {NULL},
+};
+
+iotInt32 iot_cache_add(struct iotCache *c, iotChar* buff, iotInt32 len) {
   // Packet cache is a simple FIFO queue
+  iotInt32 status;
+
+  status = json_read_object(buff, g_ForwardType, NULL);
+  IOT_LOG_INFO("Count %d", g_StringCount);
+  IOT_LOG_INFO("String %s", g_StringPtrs[0]);
+  IOT_LOG_INFO("String %d %d", strstr(json_str6, "\"F\""), strstr(json_str6, "\"R\""));
+
   if (c->m_NextIdx == IOT_CACHE_SIZE)
     c->m_NextIdx = 0;
 

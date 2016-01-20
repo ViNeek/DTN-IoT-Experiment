@@ -66,10 +66,18 @@ iotUInt64 iot_time() {
 }
 
 iotBool iot_flip_coin() {
+#if TARGET==IOT_PLATFORM_SKY
   static const iotInt32 g_Threshold = RAND_MAX / 2; 
+  //iotInt32 g_Threshold = 1414; 
   iotInt32 randomPick = random_rand();
-  IOT_LOG_INFO("Values %d %d", RAND_MAX, randomPick);
+  //IOT_LOG_INFO("Values %d %d %d", g_Threshold, RAND_MAX, randomPick);
+  //IOT_LOG_INFO("Values %d ", g_Threshold);
+  //IOT_LOG_INFO("Values %d ", RAND_MAX);
+  //IOT_LOG_INFO("Values %d ", randomPick);
   return randomPick > g_Threshold; 
+#else
+  return random_rand() % 2;
+#endif
 }
 
 iotUInt16 iot_random_in_range(iotUInt16 min, iotUInt16 max) {

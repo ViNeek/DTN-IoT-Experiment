@@ -4,6 +4,8 @@
 #include <iot/types.h>
 #include <iot/cache.h>
 
+#define PACKETBUF_CONF_SIZE 256
+
 #include "contiki.h"
 #include "net/rime.h"
 #include "random.h"
@@ -27,8 +29,8 @@ struct iotClient {
   struct broadcast_conn m_BC;
 
   iotBool       m_Interests[MAX_TYPE];
-  iotBool		m_InRange;
-  iotBool		m_PendingAnnounce;
+  iotBool		    m_InRange;
+  iotBool		    m_PendingAnnounce;
 
 } iotClient;
 

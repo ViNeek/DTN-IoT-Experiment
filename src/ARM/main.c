@@ -44,6 +44,8 @@ PROCESS_THREAD(dtn_process, ev, data) {
 
   iot_init();
 
+  //iot_packet_test();
+
 #if ROLE==IOT_SERVER
   IOT_LOG_INFO("Starting Mule at address %s", iot_node_address());
 

@@ -34,7 +34,10 @@ static void _iot_client_announce(void *c) {
   struct iotClient *client = (struct iotClient *)c;
   client->m_PendingAnnounce = IOT_TRUE;
   if ( iot_mule_discovered() ) {
-    IOT_LOG_INFO("Announce");
+    //iot_client_interest_json_desc(client, buff, &len);
+    iot_packet_generate_forward(client, buff, &len);
+    iot_send(IOT_NETWORK_ENTITY(client), buff, len, iot_mule_address() );
+    client->m_PendingAnnounce = IOT_FALSE;
   } else {
     IOT_LOG_INFO("No mule around");
   }
@@ -62,9 +65,9 @@ static void _iot_state_swap(void *c) {
       //IOT_LOG_INFO("Next Interest %d %d", nextInterestPoint, nextInterestPoint - CLOCK_SECOND);
       ctimer_set(&g_ClientCreateInterestCallback, nextInterestPoint, _iot_client_announce, c);
     #endif
-    IOT_LOG_INFO("ALIVE");
+    //IOT_LOG_INFO("ALIVE");
   } else {
-    IOT_LOG_INFO("NOT ALIVE");
+    //IOT_LOG_INFO("NOT ALIVE");
   }
   // New Timer
   //ctimer_reset(&g_StateSwapCallback);
@@ -78,7 +81,7 @@ iotInt32 iot_mule_create(struct iotDataMule *dm) {
   unicast_open(&dm->m_UC, IOT_RIME_UNICAST_CHANNEL, iot_mule_unicast_callbacks());
 
   iot_cache_init(&dm->m_PacketCache);
-  iot_cache_random_populate(&dm->m_PacketCache);
+  //iot_cache_random_populate(&dm->m_PacketCache);
 
   ctimer_set(&g_AnnounceCallback, IOT_BROADCAST_INTERVAL, _iot_mule_announce, dm);
 
@@ -99,7 +102,8 @@ iotInt32 iot_client_create(struct iotClient *client) {
     IOT_LOG_INFO("Client interest %d", iot_flip_coin());
   }
 
-  iot_client_interest_json_desc(client, buff, &length);
+  //iot_client_interest_json_desc(client, buff, &length);
+  iot_packet_generate_forward(client, buff, &length);
 
   IOT_LOG_INFO("Client interest %s of size %d", buff, length);
 
@@ -159,7 +163,7 @@ const rimeaddr_t *iot_mule_address() {
 }
 
 const iotChar* iot_mule_address_desc() {
-  return g_MuleRimeAddrDesc;
+  return &g_MuleRimeAddrDesc[0];
 }
 
 iotInt32 iot_set_mule_address(const rimeaddr_t *address) {

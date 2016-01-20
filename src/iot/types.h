@@ -12,7 +12,7 @@ typedef char				iotChar;
 typedef unsigned char   	iotByte;	
 typedef unsigned short		iotUInt16;
 typedef short				iotInt16;
-#if TARGET!=sky
+#if TARGET!=IOT_PLATFORM_SKY
 typedef unsigned int		iotUInt32;
 typedef int					iotInt32;
 #else
