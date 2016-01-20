@@ -8,9 +8,12 @@
 #include "net/rime.h"
 #include "random.h"
 
-#define IOT_BROADCAST_INTERVAL 2 * CLOCK_SECOND 
+#define IOT_BROADCAST_INTERVAL ( 2 * CLOCK_SECOND )
 
-#define IOT_INACTIVE_EPOCH 4 * CLOCK_SECOND 
+#define IOT_EPOCH_MID ( 4 * CLOCK_SECOND )
+#define IOT_EPOCH_MAX ( 8 * CLOCK_SECOND )
+#define IOT_EPOCH_MIN ( CLOCK_SECOND )
+#define IOT_INTEREST_MIN ( 1 )
 
 #define IOT_NETWORK_ENTITY(x) ((struct iotNetworkEntity*)x)
 

@@ -1,6 +1,8 @@
 #include <iot/util.h>
 #include <iot/networking.h>
 
+#include <limits.h>
+
 #include "contiki.h"
 
 #include "lib/random.h"
@@ -63,9 +65,15 @@ iotUInt64 iot_time() {
   return clock_time();
 }
 
-iotBool iot_flip_coin() { return random_rand() % 2; }
+iotBool iot_flip_coin() {
+  static const iotInt32 g_Threshold = RAND_MAX / 2; 
+  iotInt32 randomPick = random_rand();
+  IOT_LOG_INFO("Values %d %d", RAND_MAX, randomPick);
+  return randomPick > g_Threshold; 
+}
 
 iotUInt16 iot_random_in_range(iotUInt16 min, iotUInt16 max) {
+/*
 #if TARGET!=IOT_PLATFORM_SKY
   // max <= RAND_MAX < ULONG_MAX, so this is okay.
   iotUInt32 num_bins = (iotUInt32)(max - min);
@@ -80,12 +88,13 @@ iotUInt16 iot_random_in_range(iotUInt16 min, iotUInt16 max) {
 
   return (x / bin_size) + min;
 #else
+  */
   iotUInt32 num_bins = max - min;
   iotUInt32 x;
   x = random_rand() % num_bins;
 
   return x + min;
-#endif
+//#endif
 
 }
 
