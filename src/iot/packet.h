@@ -27,7 +27,6 @@ struct iotCachedPacket {
   char m_Buff[IOT_PACKET_SIZE];
 } iotCachedPacket;
 
-void iot_packet_test();
 const iotChar* iot_packet_generate_forward(struct iotClient* c, iotChar* buffer, iotInt32* len);
 const iotChar* iot_packet_generate_request(struct iotClient* c, const iotChar* data, iotChar* buffer, iotInt32* len);
 const iotChar* iot_packet_generate_response(struct iotDataMule* c, const iotChar* data, iotChar* buffer, iotInt32* len);

@@ -81,31 +81,14 @@ iotBool iot_flip_coin() {
 }
 
 iotUInt16 iot_random_in_range(iotUInt16 min, iotUInt16 max) {
-/*
-#if TARGET!=IOT_PLATFORM_SKY
-  // max <= RAND_MAX < ULONG_MAX, so this is okay.
-  iotUInt32 num_bins = (iotUInt32)(max - min);
-  iotUInt32 num_rand = (iotUInt32)RANDOM_RAND_MAX + 1;
-  iotUInt32 bin_size = num_rand / num_bins;
-  iotUInt32 defect = num_rand % num_bins;
-
-  iotUInt32 x;
-  do {
-    x = random_rand();
-  } while (num_rand - defect <= (unsigned long)x);
-
-  return (x / bin_size) + min;
-#else
-  */
   iotUInt32 num_bins = max - min;
   iotUInt32 x;
   x = random_rand() % num_bins;
 
   return x + min;
-//#endif
-
 }
 
+#define IOT_DEBUG 0
 static const char *LEVEL_STRING[MAX_LEVEL] = {"INFO", "DEBUG", "WARN", "ERROR"};
 
 void iot_log(enum iotLogLevels lvl, const iotChar *filename,
@@ -121,13 +104,13 @@ void iot_log(enum iotLogLevels lvl, const iotChar *filename,
 
   va_list args;
 #if ROLE==IOT_SERVER
-  printf("[%s Mule %s: %02d:%02d:%02d] - %-20s ", LEVEL_STRING[lvl], iot_node_address(), hours, minutes,
-         seconds, filename);
+  printf("[%s Mule %s: %02d:%02d:%02d] %-4s - %-20s ", LEVEL_STRING[lvl], iot_node_address(), hours, minutes,
+         seconds, "", filename);
 #endif
 
 #if ROLE==IOT_CLIENT
-  printf("[%s Client %s: %02d:%02d:%02d] - %-20s ", LEVEL_STRING[lvl], iot_node_address(), hours, minutes,
-         seconds, filename);
+  printf("[%s Client %s: %02d:%02d:%02d] %-2s - %-20s ", LEVEL_STRING[lvl], iot_node_address(), hours, minutes,
+         seconds, "", filename);
 #endif
   va_start(args, format);
   vprintf(format, args);

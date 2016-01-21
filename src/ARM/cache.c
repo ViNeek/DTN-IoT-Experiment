@@ -2,6 +2,8 @@
 #include <iot/cache.h>
 #include <iot/util.h>
 
+#include <iot/mjson.h>
+
 #include <string.h>
 #include <stdio.h>
 
@@ -36,7 +38,8 @@ iotInt32 iot_cache_random_populate(struct iotCache *c) {
     *payload = 0;
 
     strcpy(header, iot_packet_type(randType));
-    strcpy(payload, "Random text");
+    sprintf(payload, "https://www.google.com/?id=%d", i);
+    //strcpy(payload, "https://www.google.com/?id=%d");
 
     //IOT_LOG_INFO("Header %s", header);
     //IOT_LOG_INFO("Payload %s", payload);
@@ -113,20 +116,32 @@ iotInt32 iot_cache_add(struct iotCache *c, iotChar* buff, iotInt32 len) {
   iotInt32 status;
 
   status = json_read_object(buff, g_ForwardType, NULL);
-  IOT_LOG_INFO("Count %d", g_StringCount);
-  IOT_LOG_INFO("String %s", g_StringPtrs[0]);
-  IOT_LOG_INFO("String %d %d", strstr(json_str6, "\"F\""), strstr(json_str6, "\"R\""));
+  //IOT_LOG_INFO("Error %d", status);
+  if ( status != 0 ) {
+    return -1;
+  }
+  //IOT_LOG_INFO("Cache add %d %s", status, buff);
+  //IOT_LOG_INFO("Count %d", g_StringCount);
+  //IOT_LOG_INFO("String %s", g_StringPtrs[0]);
+  //IOT_LOG_INFO("String %s", g_StringPtrs[1]);
 
   if (c->m_NextIdx == IOT_CACHE_SIZE)
     c->m_NextIdx = 0;
 
   // Get open slot
   struct iotCachedPacket *slot = &c->m_Cache[c->m_NextIdx];
+  iotChar *header = &slot->m_Buff[IOT_PACKET_HEADER_OFFSET];
+  iotChar *payload = &slot->m_Buff[IOT_PACKET_PAYLOAD_OFFSET];
 
   // Update slot with incoming packet
-  slot->m_Len = p->m_Len;
-  memcpy(&slot->m_Buff[0], &p->m_Buff[0], p->m_Len);
-  slot->m_Buff[slot->m_Len] = 0;
+  strcpy(header, g_StringPtrs[0]);
+  strcpy(payload, g_StringPtrs[1]);
+  slot->m_Len = strlen(g_StringPtrs[1]);
+  slot->m_Type = iot_packet_type_by_string(header);
+  
+  //IOT_LOG_INFO("Count %d", slot->m_Len);
+  //IOT_LOG_INFO("Payload %s", payload);
+  //IOT_LOG_INFO("Header %s", header);
 
   c->m_NextIdx++;
 

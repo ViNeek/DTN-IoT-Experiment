@@ -2,6 +2,7 @@
 
 #include <iot/mjson.h>
 
+#include <string.h>
 #include <stdio.h>
 
 // Client broadcast receive callback
@@ -11,51 +12,73 @@ static void _iot_client_broadcast_recv(struct broadcast_conn *c,
                                        const rimeaddr_t *from) {
   iotInt32 len;
   iotChar buff[IOT_PACKET_SIZE];
-  IOT_LOG_INFO("Broadcast message received from %d.%d: '%s'\n", from->u8[0],
-         from->u8[1], (char *)packetbuf_dataptr());
-
+  iotChar* buffPtr;
   struct iotClient* client = iot_client_ref();
 
+#if TARGET!=IOT_PLATFORM_SKY
+  if ( !client->m_InRange ) {
+    return;
+  }
+#endif
+
+  // Update mule structures
+  iot_set_prev_mule_address(iot_mule_address());
   iot_set_mule_address(from);
 
-  iot_packet_generate_request(client, (char *)packetbuf_dataptr(), buff, &len);
-
-  iot_send(IOT_NETWORK_ENTITY(client), buff, len, from);
-
-  if ( client->m_PendingAnnounce ) {
-    client->m_PendingAnnounce = false;
-    IOT_LOG_INFO("Request is also Pending");
+  // Skip the mule if it' s the same
+  if ( iot_mule_discovered() ) {
+    if ( !iot_mule_changed() ) {
+      return;
+    }
   }
 
-  IOT_LOG_INFO("Mule address is %s", iot_mule_address_desc());
-  IOT_LOG_INFO("Interested in [%d:%s]", len, buff);
+  iot_recv(IOT_NETWORK_ENTITY(client), &buffPtr, &len, from);
+  //IOT_LOG_INFO("Broadcast message received from %d.%d: '%s'\n", from->u8[0], from->u8[1], buffPtr);
+
+  // Maybe the mule has nothing
+  if ( iot_packet_generate_request(client, buffPtr, buff, &len) ) {
+    iot_send(IOT_NETWORK_ENTITY(client), buff, len, from);
+  }
+
+  // Send any existing forward request
+  if ( client->m_PendingAnnounce ) {
+    iot_client_announce(client);
+  }
+
+  //IOT_LOG_INFO("Mule address is %s", iot_mule_address_desc());
+  //IOT_LOG_INFO("Interested in %s", buff);
 }
 
 static void _iot_client_unicast_recv(struct unicast_conn *c,
                                      const rimeaddr_t *from) {
-  
-  IOT_LOG_INFO("Unicast message received from %d.%d\n", from->u8[0], from->u8[1]);
-  
+  iotInt32 len;
+  iotChar* buffPtr;
+
+  struct iotClient* client = iot_client_ref();
+
+  iot_recv(IOT_NETWORK_ENTITY(client), &buffPtr, &len, from);
+  IOT_LOG_INFO("Available information %s", buffPtr);  
 }
 
 // Mule Unicast callback
 // Mostly used to communicate with clients
 static void _iot_mule_unicast_recv(struct unicast_conn *c,
                                    const rimeaddr_t *from) {
-  IOT_LOG_INFO("Unicast message received from %d.%d %s\n", from->u8[0], from->u8[1], (char *)packetbuf_dataptr());
-
   iotInt32 len;
   iotChar buff[IOT_PACKET_SIZE];
+  iotChar* buffPtr;
   
-  IOT_LOG_INFO("Unicast message received from %d.%d\n", from->u8[0], from->u8[1]);
   struct iotDataMule* dm = iot_mule_ref();
 
-  if ( strstr((char *)packetbuf_dataptr(), "\"F\"") ) {
+  iot_recv(IOT_NETWORK_ENTITY(dm), &buffPtr, &len, from);
+  IOT_LOG_INFO("Unicast message received from %d.%d : %s", from->u8[0], from->u8[1], buffPtr);
+  
+  if ( strstr(buffPtr, "\"F\"") ) {
     // Store packet in cache
-    IOT_LOG_INFO("Forward");
+    iot_cache_add(&dm->m_PacketCache, buffPtr, len);
   } else {
-    IOT_LOG_INFO("Request");
-    iot_packet_generate_response(dm, (char *)packetbuf_dataptr(), buff, &len);
+    // Reply with available info
+    iot_packet_generate_response(dm, buffPtr, buff, &len);
 
     iot_send(IOT_NETWORK_ENTITY(dm), buff, len, from);
   }
@@ -66,8 +89,8 @@ static void _iot_mule_unicast_recv(struct unicast_conn *c,
 // Not much use for now
 static void _iot_mule_broadcast_recv(struct broadcast_conn *c,
                                      const rimeaddr_t *from) {
-    IOT_LOG_INFO("Broadcast message received from %d.%d\n", from->u8[0], from->u8[1]);
-
+  // Shoud never get here if there is NO other mule
+  IOT_LOG_INFO("Unexpected broadcast message received from %d.%d\n", from->u8[0], from->u8[1]);
 }
 
 // Mule callbacks
@@ -124,7 +147,7 @@ iotInt32 iot_broadcast(struct iotNetworkEntity* broadcaster, iotChar* data, iotI
   packetbuf_copyfrom(data, len+1);
   broadcast_send(&broadcaster->m_BC);
 
-  IOT_LOG_INFO("Announcing %s of size %d", data, len);
+  IOT_LOG_INFO("List of available information Types %s", data);
 
   return 0;
 }
@@ -135,12 +158,17 @@ iotInt32 iot_send(struct iotNetworkEntity* sender, iotChar* data, iotInt32 len, 
   //packetbuf_copyfrom(data, len);
   unicast_send(&sender->m_UC, to);
 
+  //IOT_LOG_INFO("Unicasting %s of size %d", data, len);
+
   return 0;
 }
 
 iotInt32 iot_recv(struct iotNetworkEntity* receiver, iotChar** dataPtr, iotInt32* len, const rimeaddr_t *from){ 
-  packetbuf_clear ();
-  packetbuf_dataptr();
+  //packetbuf_clear();
+  *dataPtr = packetbuf_dataptr();
+  *len = strlen((char*) packetbuf_dataptr());
+
+  //IOT_LOG_INFO("Receiving %s of size %d", *dataPtr, *len);
 
   return 0;
 }

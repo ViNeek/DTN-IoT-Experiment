@@ -37,38 +37,30 @@ static const struct json_attr_t g_RequestType[] = {
     {NULL},
 };
 
-void iot_packet_test() {
-	int status;
-
-	status = json_read_object(json_str6, g_ForwardType, NULL);
-	IOT_LOG_INFO("Count %d", g_StringCount);
-	IOT_LOG_INFO("String %s", g_StringPtrs[0]);
-	IOT_LOG_INFO("String %d %d", strstr(json_str6, "\"F\""), strstr(json_str6, "\"R\""));
-}
-
 const iotChar* iot_packet_generate_forward(struct iotClient* c, iotChar* buffer, iotInt32* len) {
-  iotInt32 status;
-  iotInt32 val;
+  iotChar tmpBuff[32];
   iotInt32 randType;
-  iotInt32 length = 2;
-  iotBool empty = IOT_TRUE;
+  iotInt32 length = 8;
   buffer[0] = 0;
+  tmpBuff[0] = 0;
 
   strcat(buffer, "{\"F\":[");
-  randType = iot_random_in_range(0, MAX_TYPE);
+  //randType = iot_random_in_range(0, MAX_TYPE);
+  randType = c->m_ForwardType;
   
   strcat(buffer, "\"");
   strcat(buffer, iot_packet_type(randType));
   strcat(buffer, "\"");
   strcat(buffer, ",");	
   strcat(buffer, "\"");
-  strcat(buffer, "Random Text");
+  sprintf(tnpBuff, "https://www.google.com/?addr=%d.%d", rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1]);
+  strcat(buffer, tmpBuff);
   strcat(buffer, "\""); 
   strcat(buffer, "]}");
 
   length = strlen(buffer);
 
-  IOT_LOG_INFO("Forward %s", buffer);
+  //IOT_LOG_INFO("ForwardING %d %s", length, buffer);
   *len = length;
 
   return buffer;
@@ -77,16 +69,22 @@ const iotChar* iot_packet_generate_forward(struct iotClient* c, iotChar* buffer,
 const iotChar* iot_packet_generate_request(struct iotClient* c, const iotChar* data, iotChar* buffer, iotInt32* len) {
   iotInt32 status;
   iotInt32 val;
-  iotInt32 length = 2;
+  iotInt32 length = 8;
   iotBool empty = IOT_TRUE;
   buffer[0] = 0;
 
   status = json_read_array(data, &g_AvailableTypes, NULL);
 
+  if ( status != 0 ) {
+    strcat(buffer, "[\"error\"]");
+    length = strlen(buffer);
+    *len = length;
+  }
+
   strcat(buffer, "{\"R\":[");
   for (iotInt32 i = 0; i < g_StringCount; ++i ) {
     val = iot_packet_type_by_string(g_StringPtrs[i]);
-    if ( c->m_Interests[i] == val ) {
+    if ( c->m_Interests[val] == 1 ) {
     	empty = IOT_FALSE;
     	//IOT_LOG_INFO("Want about %s", g_StringPtrs[i]);
     	strcat(buffer, "\"");
@@ -102,21 +100,34 @@ const iotChar* iot_packet_generate_request(struct iotClient* c, const iotChar* d
     buffer[length-1] = 0;
   }
 
-  strcat(buffer, "]");
+  strcat(buffer, "]}");
 
-  *len = length;
+  *len = length+1;
+
+  IOT_LOG_INFO("Empty %d %s", empty, buffer);
+
+  if ( empty )
+    return NULL;
 
   return buffer;
 }
 
 const iotChar* iot_packet_generate_response(struct iotDataMule* c, const iotChar* data, iotChar* buffer, iotInt32* len) {
   iotInt32 status;
-  iotInt32 val;
   iotInt32 length = 2;
   iotBool empty = IOT_TRUE;
   buffer[0] = 0;
 
-  status = json_read_array(data, &g_AvailableTypes, NULL);
+  status = json_read_object(data, g_RequestType, NULL);
+ 
+  //IOT_LOG_INFO("Error %d", status);
+  if ( status != 0 ) {
+    strcat(buffer, "[\"error\"]");
+    length = strlen(buffer);
+    *len = length;
+
+    return buffer;
+  }
 
   strcat(buffer, "{");
   for (iotInt32 i = 0; i < g_StringCount; ++i ) {
@@ -125,6 +136,7 @@ const iotChar* iot_packet_generate_response(struct iotDataMule* c, const iotChar
     strcat(buffer, g_StringPtrs[i]);
     strcat(buffer, "\"");
     strcat(buffer, ":[");
+      IOT_LOG_INFO("String %s", g_StringPtrs[i]);
     for (iotInt32 j = 0; j < IOT_CACHE_SIZE; ++j) {
   		if ( c->m_PacketCache.m_Cache[j].m_Type != UNKNOWN_TYPE ) {
   			iotChar *header = &c->m_PacketCache.m_Cache[j].m_Buff[IOT_PACKET_HEADER_OFFSET];
@@ -137,6 +149,9 @@ const iotChar* iot_packet_generate_response(struct iotDataMule* c, const iotChar
         		strcat(buffer, payload);
         		strcat(buffer, "\"");
         		strcat(buffer, ",");
+
+            // Keep only  the first so that we do not run out of memory
+            //break;
     		}
   		}
   	}
@@ -149,10 +164,11 @@ const iotChar* iot_packet_generate_response(struct iotDataMule* c, const iotChar
   }
   
   // Erase dangling 'comma'
-  length = strlen(buffer);
-  buffer[length-1] = 0;
-
-  strcat(buffer, "]");
+  if ( g_StringCount != 0 ) {
+    length = strlen(buffer);
+    buffer[length-1] = 0;
+  }
+  strcat(buffer, "}");
 
   IOT_LOG_INFO("Buffered response %s", buffer);
 

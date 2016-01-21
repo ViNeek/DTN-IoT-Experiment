@@ -26,25 +26,34 @@ static void _iot_mule_announce(void *dm) {
 }
 
 static struct ctimer g_ClientCreateInterestCallback;
+static iotChar g_ForwardBuffer[IOT_PACKET_SIZE];
+static iotInt32 g_ForwardBufferLen;
 static void _iot_client_announce(void *c) {
-  iotChar buff[IOT_PACKET_SIZE];
-  buff[0] = 0;
-  iotInt32 len = 0;
-
   struct iotClient *client = (struct iotClient *)c;
-  client->m_PendingAnnounce = IOT_TRUE;
-  if ( iot_mule_discovered() ) {
-    //iot_client_interest_json_desc(client, buff, &len);
-    iot_packet_generate_forward(client, buff, &len);
-    iot_send(IOT_NETWORK_ENTITY(client), buff, len, iot_mule_address() );
-    client->m_PendingAnnounce = IOT_FALSE;
-  } else {
-    IOT_LOG_INFO("No mule around");
-  }
-  // Reset Timer
-  //ctimer_reset(&g_ClientAnnounceCallback);
 
+  if ( !client->m_PendingAnnounce ) {
+    g_ForwardBuffer[0] = 0;
+    g_ForwardBufferLen = 0;
+    client->m_PendingAnnounce = IOT_TRUE;
+    iot_packet_generate_forward(client, g_ForwardBuffer, &g_ForwardBufferLen);
+  }
+
+  if ( iot_mule_discovered() ) {
+    //IOT_LOG_INFO("mule around");
+    if ( client->m_PendingAnnounce ) {
+      if ( iot_mule_changed() ) {
+        iot_send(IOT_NETWORK_ENTITY(client), g_ForwardBuffer, g_ForwardBufferLen, iot_mule_address() );
+        client->m_PendingAnnounce = IOT_FALSE;
+      } else {
+
+      }
+    }
+  } else {
+    //IOT_LOG_INFO("No mule around");
+  }
 }
+
+void iot_client_announce(struct iotClient *c) { _iot_client_announce(c); }  
 
 static struct ctimer g_StateSwapCallback;
 static void _iot_state_swap(void *c) {
@@ -52,7 +61,9 @@ static void _iot_state_swap(void *c) {
   iotInt32 nextInterestPoint;
   struct iotClient *client = (struct iotClient *)c;
 
+#if TARGET!=IOT_PLATFORM_SKY 
   client->m_InRange = iot_flip_coin();
+#endif
 
   nextEpochDuration = iot_random_in_range(IOT_EPOCH_MIN, IOT_EPOCH_MAX);
   //IOT_LOG_INFO("Next Epoch %d", nextEpochDuration);
@@ -91,23 +102,28 @@ iotInt32 iot_mule_create(struct iotDataMule *dm) {
 iotInt32 iot_client_create(struct iotClient *client) { 
   iotChar buff[IOT_PACKET_SIZE];
   buff[0] = 0;
-  iotInt32 length;
 
   broadcast_open(&client->m_BC, IOT_RIME_BROADCAST_CHANNEL, iot_client_broadcast_callbacks());
   unicast_open(&client->m_UC, IOT_RIME_UNICAST_CHANNEL, iot_client_unicast_callbacks());
 
+#if TARGET==IOT_PLATFORM_SKY
+  client->m_InRange = IOT_TRUE;
+#else
   client->m_InRange = iot_flip_coin();
+#endif
+
+  //client->m_PendingAnnounce = iot_flip_coin();
+  client->m_PendingAnnounce = IOT_FALSE;
+  client->m_ForwardType = iot_random_in_range(0, MAX_TYPE);
+  //IOT_LOG_INFO("Forward %d", client->m_ForwardType);
   for (iotInt32 i = 0; i < MAX_TYPE; ++i) {
-    client->m_Interests[i] = IOT_FALSE;
-    IOT_LOG_INFO("Client interest %d", iot_flip_coin());
+    //client->m_Interests[i] = IOT_FALSE;
+    client->m_Interests[i] = iot_flip_coin();
+    IOT_LOG_INFO("Interest in %s %d", iot_packet_type(i), client->m_Interests[i]);
   }
 
-  //iot_client_interest_json_desc(client, buff, &length);
-  iot_packet_generate_forward(client, buff, &length);
-
-  IOT_LOG_INFO("Client interest %s of size %d", buff, length);
-
   ctimer_set(&g_StateSwapCallback, IOT_EPOCH_MID, _iot_state_swap, client);
+
   if ( client->m_InRange ) {
     #if TARGET==IOT_PLATFORM_SKY
       leds_toggle(LEDS_ALL);
@@ -153,7 +169,8 @@ iotChar *iot_client_interest_json_desc(struct iotClient *c, iotChar *buffer,
 
 // Mule Node RIME address
 static iotChar g_MuleRimeAddrDesc[IOT_RIME_ADDRESS_LENGTH] = { 0 };
-static rimeaddr_t g_MuleRimeAddr;
+static rimeaddr_t g_MuleRimeAddr = { { 0 } };
+static rimeaddr_t g_PrevMuleRimeAddr = { { 0 } };
 iotBool iot_mule_discovered() {
   return g_MuleRimeAddrDesc[0] != 0;
 }
@@ -162,8 +179,21 @@ const rimeaddr_t *iot_mule_address() {
   return &g_MuleRimeAddr;
 }
 
+iotBool iot_mule_changed() {
+  if ( !iot_mule_discovered() )
+    return IOT_FALSE;
+  //IOT_LOG_INFO("Addr %d.%d %d.%d", g_MuleRimeAddr.u8[0], g_MuleRimeAddr.u8[1], g_PrevMuleRimeAddr.u8[0], g_PrevMuleRimeAddr.u8[0]);
+  return !rimeaddr_cmp(&g_MuleRimeAddr, &g_PrevMuleRimeAddr);
+}
+
 const iotChar* iot_mule_address_desc() {
   return &g_MuleRimeAddrDesc[0];
+}
+
+iotInt32 iot_set_prev_mule_address(const rimeaddr_t *address) {
+  g_PrevMuleRimeAddr = *address;
+  
+  return 0;
 }
 
 iotInt32 iot_set_mule_address(const rimeaddr_t *address) {
