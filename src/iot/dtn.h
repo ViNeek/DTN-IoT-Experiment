@@ -4,7 +4,7 @@
 #include <iot/types.h>
 #include <iot/cache.h>
 
-#define PACKETBUF_CONF_SIZE 256
+#define PACKETBUF_CONF_SIZE 512
 
 #include "contiki.h"
 #include "net/rime.h"
@@ -25,12 +25,13 @@ struct iotNetworkEntity {
 } iotNetworkEntity;
 
 struct iotClient {
-  struct unicast_conn m_UC;
-  struct broadcast_conn m_BC;
+  struct unicast_conn     m_UC;
+  struct broadcast_conn   m_BC;
 
-  iotBool       m_Interests[MAX_TYPE];
-  iotBool		    m_InRange;
-  iotBool		    m_PendingAnnounce;
+  iotBool                 m_Interests[MAX_TYPE];
+  iotBool		              m_InRange;
+  iotBool		              m_PendingAnnounce;
+  enum iotPacketTypes     m_ForwardType;
 
 } iotClient;
 
@@ -53,8 +54,13 @@ iotInt32 iot_client_close(struct iotClient* p);
 iotChar *iot_client_interest_json_desc(struct iotClient *c, iotChar *buffer,
                              iotInt32 *len);
 
+void iot_client_announce(struct iotClient *c);
+
 iotBool iot_mule_discovered();
 const rimeaddr_t *iot_mule_address();
 const iotChar* iot_mule_address_desc();
+
+iotBool iot_mule_changed();
 iotInt32 iot_set_mule_address(const rimeaddr_t *address);
+iotInt32 iot_set_prev_mule_address(const rimeaddr_t *address);
 #endif // __IOT_DTN__H
