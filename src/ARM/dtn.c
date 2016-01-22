@@ -31,17 +31,20 @@ static iotInt32 g_ForwardBufferLen;
 static void _iot_client_announce(void *c) {
   struct iotClient *client = (struct iotClient *)c;
 
+  //IOT_LOG_INFO("In");
   if ( !client->m_PendingAnnounce ) {
     g_ForwardBuffer[0] = 0;
     g_ForwardBufferLen = 0;
     client->m_PendingAnnounce = IOT_TRUE;
     iot_packet_generate_forward(client, g_ForwardBuffer, &g_ForwardBufferLen);
   }
+  //IOT_LOG_INFO("Out");
 
   if ( iot_mule_discovered() ) {
     //IOT_LOG_INFO("mule around");
     if ( client->m_PendingAnnounce ) {
       if ( iot_mule_changed() ) {
+        //IOT_LOG_INFO("mule around");
         iot_send(IOT_NETWORK_ENTITY(client), g_ForwardBuffer, g_ForwardBufferLen, iot_mule_address() );
         client->m_PendingAnnounce = IOT_FALSE;
       } else {
@@ -67,6 +70,7 @@ static void _iot_state_swap(void *c) {
 
   nextEpochDuration = iot_random_in_range(IOT_EPOCH_MIN, IOT_EPOCH_MAX);
   //IOT_LOG_INFO("Next Epoch %d", nextEpochDuration);
+  //IOT_LOG_INFO("Next Epoch %d", client->m_InRange);
   if ( client->m_InRange ) {
     #if TARGET==IOT_PLATFORM_SKY
       leds_toggle(LEDS_ALL);

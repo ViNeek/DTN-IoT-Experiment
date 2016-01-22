@@ -106,8 +106,6 @@ const iotChar* iot_packet_generate_request(struct iotClient* c, const iotChar* d
 
   *len = length+1;
 
-  IOT_LOG_INFO("Empty %d %d %s", IOT_FALSE, empty, buffer);
-
   if ( empty == IOT_TRUE )
     return NULL;
 
@@ -138,7 +136,7 @@ const iotChar* iot_packet_generate_response(struct iotDataMule* c, const iotChar
     strcat(buffer, g_StringPtrs[i]);
     strcat(buffer, "\"");
     strcat(buffer, ":[");
-      IOT_LOG_INFO("String %s", g_StringPtrs[i]);
+    //IOT_LOG_INFO("String %s", g_StringPtrs[i]);
     for (iotInt32 j = 0; j < IOT_CACHE_SIZE; ++j) {
   		if ( c->m_PacketCache.m_Cache[j].m_Type != UNKNOWN_TYPE ) {
   			iotChar *header = &c->m_PacketCache.m_Cache[j].m_Buff[IOT_PACKET_HEADER_OFFSET];
@@ -172,7 +170,7 @@ const iotChar* iot_packet_generate_response(struct iotDataMule* c, const iotChar
   }
   strcat(buffer, "}");
 
-  IOT_LOG_INFO("Buffered response %s", buffer);
+  //IOT_LOG_INFO("Buffered response %s", buffer);
 
   *len = length;
 
