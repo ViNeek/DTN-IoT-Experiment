@@ -53,7 +53,7 @@ const iotChar* iot_packet_generate_forward(struct iotClient* c, iotChar* buffer,
   strcat(buffer, "\"");
   strcat(buffer, ",");	
   strcat(buffer, "\"");
-  sprintf(tnpBuff, "https://www.google.com/?addr=%d.%d", rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1]);
+  sprintf(tmpBuff, "https://www.google.com/?addr=%d.%d", rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1]);
   strcat(buffer, tmpBuff);
   strcat(buffer, "\""); 
   strcat(buffer, "]}");
@@ -79,6 +79,8 @@ const iotChar* iot_packet_generate_request(struct iotClient* c, const iotChar* d
     strcat(buffer, "[\"error\"]");
     length = strlen(buffer);
     *len = length;
+
+    return NULL;
   }
 
   strcat(buffer, "{\"R\":[");
@@ -104,9 +106,9 @@ const iotChar* iot_packet_generate_request(struct iotClient* c, const iotChar* d
 
   *len = length+1;
 
-  IOT_LOG_INFO("Empty %d %s", empty, buffer);
+  IOT_LOG_INFO("Empty %d %d %s", IOT_FALSE, empty, buffer);
 
-  if ( empty )
+  if ( empty == IOT_TRUE )
     return NULL;
 
   return buffer;

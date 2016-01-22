@@ -4,7 +4,9 @@
 #include <iot/types.h>
 #include <iot/cache.h>
 
+#if TARGET==IOT_PLATFORM_SKY
 #define PACKETBUF_CONF_SIZE 512
+#endif
 
 #include "contiki.h"
 #include "net/rime.h"

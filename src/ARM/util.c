@@ -9,7 +9,7 @@
 #include "sys/ctimer.h"
 
 // Sensors and LEDs are only supported on the lab
-#if TARGET!=IOT_PLATFORM_NATIVE
+#if TARGET==IOT_PLATFORM_SKY
 #include "dev/light-sensor.h"
 #include "dev/leds.h"
 #endif
@@ -41,7 +41,7 @@ void iot_clock_tick(void *ptr) {
 iotInt32 iot_init() {
 
 // Sensors and LEDs are only supported on the lab
-#if TARGET!=IOT_PLATFORM_NATIVE 
+#if TARGET==IOT_PLATFORM_SKY 
   SENSORS_ACTIVATE(light_sensor);
   leds_toggle(LEDS_ALL);
 #endif

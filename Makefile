@@ -34,10 +34,10 @@ ifneq (,$(filter $(TARGET),sky iotlab-m3 native minimal-net))
   ifeq ($(TARGET),iotlab-m3)
     CC=/Users/nickvitsas/Documents/Projects/IOT/DTN-IoT-Experiment/toolchain/gcc-arm-none-eabi-4_8-2014q1/bin/arm-none-eabi-gcc
     ifeq ($(ROLE),server)
-    	CFLAGS=-std=gnu99 -I$(INC_DIR) $(CPPFLAGS) -DDTN_IOTLAB -DROLE=IOT_SERVER -DTARGET=IOT_PLATFORM_M3
+    	CFLAGS=-std=gnu99 -I$(INC_DIR) $(CPPFLAGS) -DROLE=IOT_SERVER -DTARGET=IOT_PLATFORM_M3
   	endif
   	ifeq ($(ROLE),client)
-    	CFLAGS=-std=gnu99 -I$(INC_DIR) $(CPPFLAGS) -DDTN_IOTLAB -DROLE=IOT_CLIENT -DTARGET=IOT_PLATFORM_SKY_M3
+    	CFLAGS=-std=gnu99 -I$(INC_DIR) $(CPPFLAGS) -DROLE=IOT_CLIENT -DTARGET=IOT_PLATFORM_M3
   	endif
   endif
   ifeq ($(TARGET),native)

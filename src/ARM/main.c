@@ -32,19 +32,7 @@ PROCESS_THREAD(dtn_process, ev, data) {
 
   PROCESS_BEGIN();
 
-  /*
-  int status;
-
-  status = json_read_array(json_str3, &json_array_3, NULL);
-  printf("Got string %d\n", stringcount);
-  printf("Got string %s\n", stringptrs[0]);
-  printf("Got string %s\n", stringptrs[1]);
-  printf("Got string %s\n", stringptrs[2]);
-  */
-
   iot_init();
-
-  //iot_packet_test();
 
 #if ROLE==IOT_SERVER
   IOT_LOG_INFO("Starting Mule at address %s", iot_node_address());

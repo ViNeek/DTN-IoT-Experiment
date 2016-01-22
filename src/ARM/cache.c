@@ -26,7 +26,7 @@ iotInt32 iot_cache_init(struct iotCache *c) {
 
 iotInt32 iot_cache_random_populate(struct iotCache *c) {
   iot_cache_init(c);
-
+  
   for (iotInt32 i = 0; i < IOT_CACHE_SIZE; ++i) {
     iotInt32 randType = iot_random_in_range(0, MAX_TYPE);
    
@@ -36,7 +36,7 @@ iotInt32 iot_cache_random_populate(struct iotCache *c) {
 
     *header = 0;
     *payload = 0;
-
+    
     strcpy(header, iot_packet_type(randType));
     sprintf(payload, "https://www.google.com/?id=%d", i);
     //strcpy(payload, "https://www.google.com/?id=%d");

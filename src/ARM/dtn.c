@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-#if TARGET!=IOT_PLATFORM_NATIVE
+#if TARGET==IOT_PLATFORM_SKY
 #include "dev/light-sensor.h"
 #include "dev/leds.h"
 #endif
@@ -122,7 +122,9 @@ iotInt32 iot_client_create(struct iotClient *client) {
     IOT_LOG_INFO("Interest in %s %d", iot_packet_type(i), client->m_Interests[i]);
   }
 
+#if TARGET!=IOT_PLATFORM_SKY
   ctimer_set(&g_StateSwapCallback, IOT_EPOCH_MID, _iot_state_swap, client);
+#endif
 
   if ( client->m_InRange ) {
     #if TARGET==IOT_PLATFORM_SKY
