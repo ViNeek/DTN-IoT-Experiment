@@ -66,7 +66,7 @@ iotUInt64 iot_time() {
 }
 
 iotBool iot_flip_coin() {
-#if TARGET==IOT_PLATFORM_SKY
+#if TARGET!=IOT_PLATFORM_NATIVE
   static const iotInt32 g_Threshold = RAND_MAX / 2; 
   //iotInt32 g_Threshold = 1414; 
   iotInt32 randomPick = random_rand();

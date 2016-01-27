@@ -15,23 +15,27 @@ static void _iot_mule_announce(void *dm) {
   buff[0] = 0;
   iotInt32 len = 0;
 
-  struct iotDataMule *mule = (struct iotDataMule *)dm;
+  struct iotDataMule *mule = iot_mule_ref();
 
   iot_cache_json_desc(&mule->m_PacketCache, buff, &len);
+  //printf("%s %d\n", buff, len);
+  IOT_LOG_INFO("List of available information Types %s", buff);
+  packetbuf_copyfrom(buff, len+1);
+  broadcast_send(&mule->m_BC);
 
   // Reset Timer
   ctimer_reset(&g_AnnounceCallback);
 
-  iot_broadcast(IOT_NETWORK_ENTITY(mule), buff, len);
+  //iot_broadcast(IOT_NETWORK_ENTITY(mule), buff, len);
 }
 
 static struct ctimer g_ClientCreateInterestCallback;
 static iotChar g_ForwardBuffer[IOT_PACKET_SIZE];
 static iotInt32 g_ForwardBufferLen;
 static void _iot_client_announce(void *c) {
-  struct iotClient *client = (struct iotClient *)c;
+  struct iotClient *client = iot_client_ref();
 
-  //IOT_LOG_INFO("In");
+  //IOT_LOG_INFO("In %d", client->m_PendingAnnounce);
   if ( !client->m_PendingAnnounce ) {
     g_ForwardBuffer[0] = 0;
     g_ForwardBufferLen = 0;
@@ -45,7 +49,10 @@ static void _iot_client_announce(void *c) {
     if ( client->m_PendingAnnounce ) {
       if ( iot_mule_changed() ) {
         //IOT_LOG_INFO("mule around");
-        iot_send(IOT_NETWORK_ENTITY(client), g_ForwardBuffer, g_ForwardBufferLen, iot_mule_address() );
+        packetbuf_copyfrom(g_ForwardBuffer, g_ForwardBufferLen+1);
+        //printf("%s %d\n", g_ForwardBuffer, g_ForwardBufferLen);
+        unicast_send(&client->m_UC, iot_mule_address());
+        //iot_send(IOT_NETWORK_ENTITY(client), g_ForwardBuffer, g_ForwardBufferLen, iot_mule_address() );
         client->m_PendingAnnounce = IOT_FALSE;
       } else {
 
@@ -69,11 +76,11 @@ static void _iot_state_swap(void *c) {
 #endif
 
   nextEpochDuration = iot_random_in_range(IOT_EPOCH_MIN, IOT_EPOCH_MAX);
-  //IOT_LOG_INFO("Next Epoch %d", nextEpochDuration);
+  //IOT_LOG_INFO("IN RANGE %d", client->m_InRange);
   //IOT_LOG_INFO("Next Epoch %d", client->m_InRange);
   if ( client->m_InRange ) {
-    #if TARGET==IOT_PLATFORM_SKY
-      leds_toggle(LEDS_ALL);
+    #if TARGET!=IOT_PLATFORM_NATIVE
+      //leds_toggle(LEDS_ALL);
       _iot_client_announce(client);
     #else
       nextInterestPoint = iot_random_in_range(IOT_INTEREST_MIN, nextEpochDuration / 2);
@@ -96,7 +103,7 @@ iotInt32 iot_mule_create(struct iotDataMule *dm) {
   unicast_open(&dm->m_UC, IOT_RIME_UNICAST_CHANNEL, iot_mule_unicast_callbacks());
 
   iot_cache_init(&dm->m_PacketCache);
-  //iot_cache_random_populate(&dm->m_PacketCache);
+  iot_cache_random_populate(&dm->m_PacketCache);
 
   ctimer_set(&g_AnnounceCallback, IOT_BROADCAST_INTERVAL, _iot_mule_announce, dm);
 
@@ -119,7 +126,7 @@ iotInt32 iot_client_create(struct iotClient *client) {
   //client->m_PendingAnnounce = iot_flip_coin();
   client->m_PendingAnnounce = IOT_FALSE;
   client->m_ForwardType = iot_random_in_range(0, MAX_TYPE);
-  //IOT_LOG_INFO("Forward %d", client->m_ForwardType);
+  IOT_LOG_INFO("Forward %d", client->m_ForwardType);
   for (iotInt32 i = 0; i < MAX_TYPE; ++i) {
     //client->m_Interests[i] = IOT_FALSE;
     client->m_Interests[i] = iot_flip_coin();
@@ -131,8 +138,8 @@ iotInt32 iot_client_create(struct iotClient *client) {
 #endif
 
   if ( client->m_InRange ) {
-    #if TARGET==IOT_PLATFORM_SKY
-      leds_toggle(LEDS_ALL);
+    #if TARGET!=IOT_PLATFORM_NATIVE
+      //leds_toggle(LEDS_ALL);
       _iot_client_announce(client);
     #else
       ctimer_set(&g_ClientCreateInterestCallback, IOT_EPOCH_MID / 2, _iot_client_announce, client);

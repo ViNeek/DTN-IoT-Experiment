@@ -15,6 +15,9 @@ static void _iot_client_broadcast_recv(struct broadcast_conn *c,
   iotChar* buffPtr;
   struct iotClient* client = iot_client_ref();
 
+  //IOT_LOG_INFO("Unexpected broadcast message received from %d.%d %s\n", from->u8[0], from->u8[1], packetbuf_dataptr());
+  IOT_LOG_INFO("ALIVE %d\n", client->m_InRange);
+
 #if TARGET!=IOT_PLATFORM_SKY
   if ( !client->m_InRange ) {
     return;
@@ -32,17 +35,21 @@ static void _iot_client_broadcast_recv(struct broadcast_conn *c,
     }
   }
 
-  iot_recv(IOT_NETWORK_ENTITY(client), &buffPtr, &len, from);
+  buffPtr = packetbuf_dataptr();
+  len = strlen((char*) packetbuf_dataptr());
+  //iot_recv(IOT_NETWORK_ENTITY(client), &buffPtr, &len, from);
   //IOT_LOG_INFO("Broadcast message received from %d.%d: '%s'\n", from->u8[0], from->u8[1], buffPtr);
 
   // Maybe the mule has nothing
   if ( iot_packet_generate_request(client, buffPtr, buff, &len) ) {
-    iot_send(IOT_NETWORK_ENTITY(client), buff, len, from);
+    packetbuf_copyfrom(buff, len+1);
+    unicast_send(&client->m_UC, from);
+    //iot_send(IOT_NETWORK_ENTITY(client), buff, len, from);
   }
 
   // Send any existing forward request
   if ( client->m_PendingAnnounce ) {
-    iot_client_announce(client);
+    //iot_client_announce(client);
   }
 
   //IOT_LOG_INFO("Mule address is %s", iot_mule_address_desc());
@@ -56,7 +63,12 @@ static void _iot_client_unicast_recv(struct unicast_conn *c,
 
   struct iotClient* client = iot_client_ref();
 
-  iot_recv(IOT_NETWORK_ENTITY(client), &buffPtr, &len, from);
+  buffPtr = packetbuf_dataptr();
+  len = strlen((char*) packetbuf_dataptr());
+  //iot_recv(IOT_NETWORK_ENTITY(dm), &buffPtr, &len, from);
+  //IOT_LOG_INFO("Unicast message received from %d.%d : %s", from->u8[0], from->u8[1], buffPtr);
+  
+  //iot_recv(IOT_NETWORK_ENTITY(client), &buffPtr, &len, from);
   IOT_LOG_INFO("Available information %s", buffPtr);  
 }
 
@@ -65,12 +77,14 @@ static void _iot_client_unicast_recv(struct unicast_conn *c,
 static void _iot_mule_unicast_recv(struct unicast_conn *c,
                                    const rimeaddr_t *from) {
   iotInt32 len;
-  iotChar buff[IOT_PACKET_SIZE];
+  iotChar buff[256];
   iotChar* buffPtr;
   
   struct iotDataMule* dm = iot_mule_ref();
 
-  iot_recv(IOT_NETWORK_ENTITY(dm), &buffPtr, &len, from);
+  buffPtr = packetbuf_dataptr();
+  len = strlen((char*) packetbuf_dataptr());
+  //iot_recv(IOT_NETWORK_ENTITY(dm), &buffPtr, &len, from);
   IOT_LOG_INFO("Unicast message received from %d.%d : %s", from->u8[0], from->u8[1], buffPtr);
   
   if ( strstr(buffPtr, "\"F\"") ) {
@@ -79,8 +93,9 @@ static void _iot_mule_unicast_recv(struct unicast_conn *c,
   } else {
     // Reply with available info
     iot_packet_generate_response(dm, buffPtr, buff, &len);
-
-    iot_send(IOT_NETWORK_ENTITY(dm), buff, len, from);
+    packetbuf_copyfrom(buff, len+1);
+    unicast_send(&dm->m_UC, from);
+    //iot_send(IOT_NETWORK_ENTITY(dm), buff, len, from);
   }
 
 }
@@ -90,7 +105,7 @@ static void _iot_mule_unicast_recv(struct unicast_conn *c,
 static void _iot_mule_broadcast_recv(struct broadcast_conn *c,
                                      const rimeaddr_t *from) {
   // Shoud never get here if there is NO other mule
-  IOT_LOG_INFO("Unexpected broadcast message received from %d.%d\n", from->u8[0], from->u8[1]);
+  IOT_LOG_INFO("Unexpected broadcast message received from %d.%d %s\n", from->u8[0], from->u8[1], packetbuf_dataptr());
 }
 
 // Mule callbacks
@@ -110,7 +125,7 @@ const struct unicast_callbacks *iot_mule_unicast_callbacks() {
   return &mule_uc_callback;
 }
 
-const struct broadcast_callbacks *iot_mule_broadcast_callbacks() {
+const struct broadcast_callbacks *  iot_mule_broadcast_callbacks() {
   return &mule_bc_callback;
 }
 
@@ -144,10 +159,12 @@ iotInt32 iot_uninit_networking() {
 
 iotInt32 iot_broadcast(struct iotNetworkEntity* broadcaster, iotChar* data, iotInt32 len) {
   //packetbuf_clear ();
+  iotInt32 status;
+  struct iotDataMule* mule= iot_mule_ref();
   packetbuf_copyfrom(data, len+1);
-  broadcast_send(&broadcaster->m_BC);
+  status = broadcast_send(&mule->m_BC);
 
-  IOT_LOG_INFO("List of available information Types %s", data);
+  IOT_LOG_INFO("List of available information Types %s : %d", data, status);
 
   return 0;
 }

@@ -27,7 +27,8 @@ iotInt32 iot_cache_init(struct iotCache *c) {
 iotInt32 iot_cache_random_populate(struct iotCache *c) {
   iot_cache_init(c);
   
-  for (iotInt32 i = 0; i < IOT_CACHE_SIZE; ++i) {
+  //for (iotInt32 i = 0; i < IOT_CACHE_SIZE; ++i) {
+  for (iotInt32 i = 0; i < 3; ++i) {
     iotInt32 randType = iot_random_in_range(0, MAX_TYPE);
    
     c->m_Cache[i].m_Type = randType;
@@ -38,7 +39,7 @@ iotInt32 iot_cache_random_populate(struct iotCache *c) {
     *payload = 0;
     
     strcpy(header, iot_packet_type(randType));
-    sprintf(payload, "https://www.google.com/?id=%d", i);
+    sprintf(payload, "https://link/?id=%d", i);
     //strcpy(payload, "https://www.google.com/?id=%d");
 
     //IOT_LOG_INFO("Header %s", header);
@@ -65,10 +66,10 @@ iotChar *iot_cache_json_desc(struct iotCache *c, iotChar *buffer,
                              iotInt32 *len) {
   iotInt32 length = 2;
   buffer[0] = 0;
-  iotBool cacheHits[MAX_TYPE+1];
+  iotBool cacheHits[UNKNOWN_TYPE+1];
   iotBool empty = IOT_TRUE;
   
-  memset(cacheHits, 0, MAX_TYPE+1);
+  memset(cacheHits, 0, UNKNOWN_TYPE+1);
 
   strcat(buffer, "[");
   for (iotInt32 i = 0; i < IOT_CACHE_SIZE; ++i) {
@@ -114,7 +115,7 @@ static const struct json_attr_t g_ForwardType[] = {
 iotInt32 iot_cache_add(struct iotCache *c, iotChar* buff, iotInt32 len) {
   // Packet cache is a simple FIFO queue
   iotInt32 status;
-
+  //IOT_LOG_INFO("In");
   status = json_read_object(buff, g_ForwardType, NULL);
   //IOT_LOG_INFO("Error %d", status);
   if ( status != 0 ) {

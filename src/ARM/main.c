@@ -21,6 +21,8 @@ AUTOSTART_PROCESSES(&dtn_process);
 
 PROCESS_THREAD(dtn_process, ev, data) {
 
+  static struct etimer et;
+
 // Set up exit handlers
 #if ROLE==IOT_SERVER
   PROCESS_EXITHANDLER(iot_mule_close(&g_DataMule);)
@@ -45,6 +47,15 @@ PROCESS_THREAD(dtn_process, ev, data) {
 
   iot_client_create(&g_Client);
 #endif
+  
+  while(1) {
+
+    /* Delay 2-4 seconds */
+    etimer_set(&et, CLOCK_SECOND * 4 + random_rand() % (CLOCK_SECOND * 4));
+
+    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+
+  }
 
   PROCESS_END();
 }

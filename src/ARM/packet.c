@@ -38,7 +38,7 @@ static const struct json_attr_t g_RequestType[] = {
 };
 
 const iotChar* iot_packet_generate_forward(struct iotClient* c, iotChar* buffer, iotInt32* len) {
-  iotChar tmpBuff[32];
+  iotChar tmpBuff[64];
   iotInt32 randType;
   iotInt32 length = 8;
   buffer[0] = 0;
@@ -60,7 +60,7 @@ const iotChar* iot_packet_generate_forward(struct iotClient* c, iotChar* buffer,
 
   length = strlen(buffer);
 
-  //IOT_LOG_INFO("ForwardING %d %s", length, buffer);
+  IOT_LOG_INFO("Forwarding %d %s", length, buffer);
   *len = length;
 
   return buffer;
@@ -170,7 +170,7 @@ const iotChar* iot_packet_generate_response(struct iotDataMule* c, const iotChar
   }
   strcat(buffer, "}");
 
-  //IOT_LOG_INFO("Buffered response %s", buffer);
+  IOT_LOG_INFO("Buffered response %s", buffer);
 
   *len = length;
 
